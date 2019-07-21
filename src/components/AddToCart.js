@@ -5,50 +5,62 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import { connect } from 'react-redux';
 import { addToCart } from './actions/CartActions';
-import { Success } from './Toasts';
-const axios = require('axios');
+import { Success, Error } from './Toasts';
+import { API, RESOURCES } from './api/api';
 
 class AddToCart extends React.Component {
 
-  state = {
-    quantity: 1
+  constructor(props) {
+    super(props);
+    this.state = {
+      quantity: 1
+    };
   }
 
-  calculateCart = cart => axios.post('http://localhost:8080/cart', cart);
+  calculateCart = cart => API.post(RESOURCES.CART, cart);
 
   onIncrement = value => this.setState({quantity: value + 1})
 
   onDecrement = value => value <= 1 ? 1 : this.setState({quantity: value - 1})
+  
+  onCartPostSuccessCallBack = response => {
+    const { add } = this.props;
+    add(response.data);
+    Success("Produto adicionado com sucesso!");
+  }
+
+  onErrorCallback = error => Error(error.message)
 
   onClickAddCart = (product, quantity) => {
-    const { cart, add } = this.props;
+    const { cart } = this.props;
     const itemOnCart = cart.items.find(cartProduct => cartProduct.item.id === product.id);
     if (itemOnCart) {
       itemOnCart.quantity = itemOnCart.quantity + quantity;
-      this.calculateCart(cart).then(result => add(result.data) && Success("Produto adicionado com sucesso!"));
+      this.calculateCart(cart).then(this.onCartPostSuccessCallBack, this.onCartPostSuccessCallBack);
     } else {
       cart.items = [...cart.items, { item: product, quantity }];
-      this.calculateCart(cart).then(result => add(result.data) && Success("Produto adicionado com sucesso!"));
+      this.calculateCart(cart).then(this.onCartPostSuccessCallBack, this.onErrorCallback);
     }
   }
 
   render() {
-    const { product } = this.props
+    const { product } = this.props;
+    const { quantity } = this.state;
     return (
       <Container style={{ alignContent: 'center' }}>
         <Row>
           <Col>
-            <Button onClick={() => this.onDecrement(this.state.quantity)} style={styles.buttonContainer}
+            <Button onClick={() => this.onDecrement(quantity)} style={styles.buttonContainer}
               variant="outline-primary"> <FontAwesomeIcon icon={faMinus} /> </Button>
-            <Button onClick={() => this.onIncrement(this.state.quantity)} style={styles.buttonContainer}
+            <Button onClick={() => this.onIncrement(quantity)} style={styles.buttonContainer}
               variant="outline-primary"> <FontAwesomeIcon icon={faPlus} /> </Button>
-            Quantidade: { this.state.quantity }
+            Quantidade: { quantity }
           </Col>
         </Row>
         <Row>
           <Col>
             <Button variant="primary" style={styles.addToCartButton}
-              onClick={() => this.onClickAddCart(product, this.state.quantity)}> Adicionar ao Carrinho </Button>
+              onClick={() => this.onClickAddCart(product, quantity)}> Adicionar ao Carrinho </Button>
           </Col>
         </Row>
       </Container>

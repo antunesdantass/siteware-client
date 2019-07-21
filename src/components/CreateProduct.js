@@ -1,22 +1,21 @@
 import React from 'react';
 import { Form, FormGroup, Button, Container, Table } from 'react-bootstrap';
 import CurrencyFormat from 'react-currency-format';
-import { toast } from 'react-toastify';
-const axios = require('axios');
+import { API, RESOURCES, removeEmptyProps } from './api/api';
+import { Success } from './Toasts';
 const _ = require('lodash');
 
 class CreateProduct extends React.Component {
-  initialState = {
-    name: "",
-    pricing: 0.0,
-    discount: "",
-    discounts: [],
-    products: []
-  }
-
+  
   constructor(props) {
     super(props);
-    this.state = this.initialState;
+    this.state = {
+      name: "",
+      pricing: undefined,
+      discount: "",
+      discounts: [],
+      products: []
+    };
   }
 
   componentDidMount() {
@@ -24,22 +23,22 @@ class CreateProduct extends React.Component {
     this.loadDiscounts();
   }
 
-  loadDiscounts = () => axios.get("http://localhost:8080/discount")
+  loadDiscounts = () => API.get(RESOURCES.DISCOUNT)
     .then(response => this.setState({discounts: response.data}))
 
-  loadProducts = () => axios.get("http://localhost:8080/product")
+  loadProducts = () => API.get(RESOURCES.PRODUCT)
     .then(response => this.setState({ products: response.data }))
   
-  updateProduct = (product, id) => axios.put(`http://localhost:8080/product/${id}`, product)
-    .then(response => {
-      this.notify("Produto atualizado com sucesso!");
+  updateProduct = (product, id) => API.put(`${RESOURCES.PRODUCT}/${id}`, removeEmptyProps(product))
+    .then(() => {
+      Success("Produto atualizado com sucesso!");
     })
 
   onChangeName = event => this.setState({ name: event.target.value })
 
-  onChangePricing = pricing => this.setState({ pricing: pricing.floatValue })
+  onChangePricing = event => this.setState({ pricing: event.floatValue })
 
-  onChangeDiscount = discount => this.setState({ discount })
+  onChangeDiscount = event => this.setState({ discount: event.discount })
 
   onUpdateProperty = (property, entity, newValue) => {
     const indexOfEntity = _.findIndex(this.state.products, product => product.id === entity.id);
@@ -53,26 +52,25 @@ class CreateProduct extends React.Component {
   submit = event => {
     const { name, pricing, discount } = this.state;
     event.preventDefault();
-    return axios.post("http://localhost:8080/product", _.omitBy({
-      name, pricing, discount
-    }, field => _.isUndefined(field) || (_.isString(field) && _.isEmpty(field)))).then(response => {
-      this.notify("Produto cadastrado com sucesso!");
-      this.form.current.reset();
-      this.setState({
-        name: "",
-        pricing: 0,
-        discount: "",
-        products: [...this.state.products, response.data]
-      });
+    return API.post(RESOURCES.PRODUCT, removeEmptyProps({
+      name, pricing, discount}))
+       .then(response => {
+          Success("Produto cadastrado com sucesso!");
+          this.form.current.reset();
+          this.setState({
+            name: "",
+            pricing: 0,
+            discount: "",
+            products: [...this.state.products, response.data]
+          });
     })
   }
-
-  notify = message => toast.success(message);
   
   render() {
     const { discounts, pricing } = this.state;
     return (
       <Container>
+        <h1> Cadastrar Produto </h1>
         <Form ref={this.form} onSubmit={this.submit.bind(this)}>
           <FormGroup controlId="productsName">
             <Form.Label> Nome do Produto </Form.Label>

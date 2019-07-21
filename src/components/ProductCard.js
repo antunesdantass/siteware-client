@@ -18,7 +18,7 @@ class ProductCard extends React.Component {
         <Card.Header> {name} </Card.Header>
         <Card.Body>
           <Card.Title> 
-            <CurrencyFormat value={pricing} displayType={'text'} thousandSeparator={true} prefix={'$'} /> 
+            <CurrencyFormat value={pricing} displayType={'text'} thousandSeparator={true} prefix={'R$ '} /> 
           </Card.Title>
           <AddToCart product={this.props.product}></AddToCart>
         </Card.Body>

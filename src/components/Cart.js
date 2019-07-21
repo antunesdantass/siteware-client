@@ -3,8 +3,8 @@ import { connect } from 'react-redux';
 import { Container, Table, Alert, Button } from 'react-bootstrap';
 import CurrencyFormat from 'react-currency-format';
 import { addToCart } from './actions/CartActions';
+import { API, RESOURCES } from './api/api';
 const _ = require('lodash');
-const axios = require('axios');
 
 class Cart extends React.Component {
 
@@ -12,7 +12,7 @@ class Cart extends React.Component {
     const cart = Object.assign(this.props.cart, {});
     const indexOfItem = _.findIndex(cart.items, cartItem => cartItem.item.id === item.item.id);
     cart.items.splice(indexOfItem, 1);
-    axios.post("http://localhost:8080/cart", cart).then(response => {
+    API.post(RESOURCES.CART, cart).then(response => {
       this.props.add(response.data);
     });
   }
@@ -27,6 +27,7 @@ class Cart extends React.Component {
               <th> Nome do Produto </th>
               <th> Preço por Item </th>
               <th> Quantidade no Carrinho </th>
+              <th> Total </th>
               {cart.items.length ? <th></th> : undefined}
             </tr>
           </thead>
@@ -36,6 +37,7 @@ class Cart extends React.Component {
                 <td> {item.item.name} </td>
                 <td> {item.item.pricing} </td>
                 <td> {item.quantity} </td>
+                <td> { item.totalPrice } </td>
                 <td> <Button onClick={() => this.removeItem(item)} variant="outline-danger"> Remover Item </Button> </td>
               </tr>
             ))}

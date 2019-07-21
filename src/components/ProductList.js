@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row } from 'react-bootstrap';
 import ProductCard from './ProductCard';
-const axios = require('axios');
+import { API, RESOURCES } from './api/api';
 
 class ProductList extends React.Component {
   constructor(props) {
@@ -12,11 +12,13 @@ class ProductList extends React.Component {
   };
 
   componentDidMount() {
-    axios.get("http://localhost:8080/product")
-      .then(result => {
-        this.setState({products: result.data})
-      });
+    this.loadProducts();
   }
+
+  loadProducts = () => API.get(RESOURCES.PRODUCT)
+    .then(response => {
+      this.setState({products: response.data})
+    });
 
   render() {
     const { products } = this.state;
