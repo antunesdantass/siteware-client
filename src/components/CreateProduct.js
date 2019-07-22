@@ -38,7 +38,7 @@ class CreateProduct extends React.Component {
 
   onChangePricing = event => this.setState({ pricing: event.floatValue })
 
-  onChangeDiscount = event => this.setState({ discount: event.discount })
+  onChangeDiscount = discount => this.setState({ discount })
 
   onUpdateProperty = (property, entity, newValue) => {
     const indexOfEntity = _.findIndex(this.state.products, product => product.id === entity.id);
